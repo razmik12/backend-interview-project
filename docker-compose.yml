@@ -5,6 +5,9 @@ services:
       dockerfile: docker/Dockerfile
     ports:
       - "8000:8000"
+    volumes:
+      - .:/app
+    
     depends_on:
       postgres:
         condition: service_healthy
