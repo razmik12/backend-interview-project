@@ -11,7 +11,7 @@ class Settings(BaseSettings):
 
     @property
     def database_url(self) -> str:
-        return f"postgresql+asyncpg://{self.db_user}:{self.db_psw}@db:5432/{self.db_name}"
+        return f"postgresql+asyncpg://{self.db_user}:{self.db_psw}@postgres:5432/{self.db_name}"
 
 
 
