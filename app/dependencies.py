@@ -1,0 +1,34 @@
+from app.core.security import decode_access_token
+from app.core.uow import UnitOfWork
+from fastapi import Depends
+from app.database import get_db
+from sqlalchemy.ext.asyncio import AsyncSession
+from app.services.auth_service import AuthService
+from fastapi.security import HTTPBearer,HTTPAuthorizationCredentials
+from app.config import settings
+from app.exceptions.user_exception import UserNotFoundError,InvalidCredentialsError
+from app.repositories.user_repo import UserRepository
+
+
+security = HTTPBearer()
+
+async def get_uow_factory(db:AsyncSession = Depends(get_db))->UnitOfWork:
+    return  UnitOfWork(session=db)
+
+
+async def get_auth_service(uow:UnitOfWork = Depends(get_uow_factory))->AuthService:
+    return AuthService(uow=uow)
+
+
+async def get_current_user(credentials:HTTPAuthorizationCredentials = Depends(security),db:AsyncSession = Depends(get_db)):
+    token = credentials.credentials
+    repo = UserRepository(session=db)
+    user_id = decode_access_token(token)
+    user = await repo.get_by_id(user_id=user_id)
+    if not user:
+        raise UserNotFoundError()
+    return user
+
+        
+        
+        
