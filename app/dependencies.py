@@ -8,7 +8,7 @@ from fastapi.security import HTTPBearer,HTTPAuthorizationCredentials
 from app.config import settings
 from app.exceptions.user_exception import UserNotFoundError,InvalidCredentialsError
 from app.repositories.user_repo import UserRepository
-
+from app.services.project_service import ProjectService
 
 security = HTTPBearer()
 
@@ -18,6 +18,10 @@ async def get_uow_factory(db:AsyncSession = Depends(get_db))->UnitOfWork:
 
 async def get_auth_service(uow:UnitOfWork = Depends(get_uow_factory))->AuthService:
     return AuthService(uow=uow)
+
+
+async def get_project_services(uow:UnitOfWork = Depends(get_uow_factory))->ProjectService:
+    return ProjectService(uow=uow)
 
 
 async def get_current_user(credentials:HTTPAuthorizationCredentials = Depends(security),db:AsyncSession = Depends(get_db)):

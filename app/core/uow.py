@@ -1,4 +1,6 @@
 from sqlalchemy.ext.asyncio import AsyncSession
+from app.repositories.project_member_repo import ProjectMemberRepository
+from app.repositories.project_repo import ProjectRepository
 from app.repositories.user_repo import UserRepository
 from app.database import async_session
 
@@ -8,7 +10,8 @@ class UnitOfWork:
 
     async def __aenter__(self):
         self.user_repo = UserRepository(session=self.session)
-        
+        self.project_repo = ProjectRepository(session=self.session)
+        self.member_repo = ProjectMemberRepository(session=self.session)
         return self
     
     async def __aexit__(self, exc_type, exc, tb):
