@@ -3,7 +3,7 @@ from collections.abc import AsyncGenerator
 from app.config import settings
 from sqlalchemy.orm import DeclarativeBase
 
-engine = create_async_engine(url=settings.database_url, echo=True, pool_size=10, max_overflow=20)
+engine = create_async_engine(url=settings.database_url, pool_size=10, max_overflow=20)
 async_session = async_sessionmaker(engine, expire_on_commit=False, autoflush=False, class_=AsyncSession)
 
 async def get_db()->AsyncGenerator[AsyncSession, None]:
