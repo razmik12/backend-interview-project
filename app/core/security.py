@@ -38,7 +38,7 @@ def create_refresh_token(user_id:uuid.UUID)->str:
     return token
 
 
-def decode_access_token(token)->uuid.UUID:
+def decode_access_token(token:str)->uuid.UUID:
     try:
         payload = jwt.decode(token,settings.secret_key,algorithms=[settings.algorithm])
         
@@ -49,7 +49,22 @@ def decode_access_token(token)->uuid.UUID:
         if not user_id:
             raise InvalidCredentialsError()
         return uuid.UUID(user_id)
-    except JWTError:
+    except (JWTError,ValueError):
+        raise InvalidCredentialsError()
+    
+
+def decode_refresh_token(token:str)->uuid.UUID:
+    try:
+        payload = jwt.decode(token,settings.secret_key,algorithms=[settings.algorithm])
+        
+        if  payload.get("type") != "refresh_token":
+                    raise InvalidCredentialsError()
+        user_id = payload.get(str("sub"))     
+        
+        if not user_id:
+            raise InvalidCredentialsError()
+        return uuid.UUID(user_id)
+    except (JWTError,ValueError):
         raise InvalidCredentialsError()
     
         

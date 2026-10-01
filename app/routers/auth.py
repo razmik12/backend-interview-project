@@ -1,5 +1,5 @@
 from app.dependencies import get_auth_service, get_current_user
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Cookie, Depends, Response, status
 from app.models.user import UserORM
 from app.schemas.user import TokenResponse, UserCreate, UserLogin, UserOut
 from app.services.auth_service import AuthService
@@ -21,3 +21,8 @@ async def login_user(data:UserLogin,service:AuthService = Depends(get_auth_servi
 @router.get("/me",response_model=UserOut,status_code=status.HTTP_200_OK)
 async def profile(user:UserORM = Depends(get_current_user)):
     return user
+
+@router.post("/refresh",response_model=TokenResponse)
+async def refresh_token(response:Response,service:AuthService = Depends(get_auth_service),token:str|None = Cookie(default=None)):
+    return await service.refresh_access_token(refresh_token=token,response=response)
+    
