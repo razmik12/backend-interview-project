@@ -13,7 +13,7 @@ async def register_user(data:UserCreate,service:AuthService = Depends(get_auth_s
     return await service.register(data=data)
 
 
-@router.post("/login",response_model=TokenResponse)
+@router.post("/login",response_model=TokenResponse,status_code=status.HTTP_200_OK)
 async def login_user(data:UserLogin,service:AuthService = Depends(get_auth_service)):
     return await service.login(data=data)
 
