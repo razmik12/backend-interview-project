@@ -13,9 +13,8 @@ class ProjectMemberRepository:
         member = ProjectMemberORM(project_id = project_id , user_id = user_id , role = role)
         self.session.add(member)
         await self.session.flush()
+        return member
         
-    async def get_member_by_id(self,user_id:UUID) -> ProjectMemberORM | None:
-        return await self.session.get(ProjectMemberORM,user_id)
     
     async def get_member(self,project_id: UUID,user_id: UUID)-> ProjectMemberORM | None:
         result = await self.session.execute(

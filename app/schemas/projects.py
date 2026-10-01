@@ -28,3 +28,14 @@ class MemberOut(BaseModel):
     
 class ProjectDetailOut(ProjectOut):
     members:list[MemberOut]
+    
+    
+    
+class ProjectUpdate(BaseModel):
+    name:str | None = None
+    description:str | None = None
+
+
+
+class MemberAdd(BaseModel):
+    user_id:uuid.UUID

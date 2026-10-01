@@ -1,6 +1,6 @@
 from app.models.user import UserORM
 from app.schemas.user import UserCreate,UserLogin,TokenResponse
-from app.exceptions.user_exception import UserNotFoundError,EmailAlreadyExistsError,InvalidCredentialsError
+from app.exceptions.user_exception import EmailAlreadyExistsError,InvalidCredentialsError
 from app.core.security import verify_password,hash_password
 from app.core.uow import UnitOfWork
 from sqlalchemy.exc import IntegrityError
@@ -35,4 +35,5 @@ class AuthService:
                 access_token=access_token,
                 refresh_token=refresh_token,
             )
+            
         

@@ -26,3 +26,11 @@ class NotProjectOwnerError(AppError):
             status_code=status.HTTP_403_FORBIDDEN,
         )
         
+
+
+class UserAlreadyMemberError(AppError):
+    def __init__(self):
+        super().__init__(
+            message="User already exists in project",
+            code="ALREADY_EXISTS",
+            status_code=status.HTTP_409_CONFLICT,)
