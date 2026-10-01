@@ -1,3 +1,4 @@
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.models.projectmember import ProjectMemberORM
 from uuid import UUID
@@ -16,4 +17,13 @@ class ProjectMemberRepository:
     async def get_member_by_id(self,user_id:UUID) -> ProjectMemberORM | None:
         return await self.session.get(ProjectMemberORM,user_id)
     
-    
+    async def get_member(self,project_id: UUID,user_id: UUID)-> ProjectMemberORM | None:
+        result = await self.session.execute(
+        select(ProjectMemberORM)
+        .where(
+            ProjectMemberORM.project_id == project_id,
+            ProjectMemberORM.user_id == user_id,
+        )
+    )
+
+        return result.scalar_one_or_none()

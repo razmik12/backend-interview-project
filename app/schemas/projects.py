@@ -1,7 +1,7 @@
 from pydantic import BaseModel,Field,ConfigDict
 import uuid
 from datetime import datetime
-
+from app.models.projectmember import ProjectMemberRole
 
 class ProjectCreate(BaseModel):
     name:str = Field(min_length=1,max_length=255)
@@ -15,3 +15,16 @@ class ProjectOut(BaseModel):
     owner_id:uuid.UUID
     created_at:datetime
     model_config = ConfigDict(from_attributes=True)
+
+
+
+class MemberOut(BaseModel):
+    id:uuid.UUID 
+    project_id:uuid.UUID 
+    user_id:uuid.UUID 
+    role:ProjectMemberRole
+    model_config = ConfigDict(from_attributes=True)
+    
+    
+class ProjectDetailOut(ProjectOut):
+    members:list[MemberOut]
