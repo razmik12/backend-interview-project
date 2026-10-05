@@ -9,14 +9,18 @@ from contextlib import asynccontextmanager
 from redis.asyncio import Redis
 from fastapi.middleware.cors import CORSMiddleware
 from app.middleware.logging import LoggingMiddleware
-
+from app.config import settings
 
 @asynccontextmanager
 async def lifespan(app:FastAPI): 
+    
     print("Starting up...")
-    redis_client = Redis.from_url("redis://redis:6379", decode_responses=True)
+    redis_client = Redis.from_url(settings.redis_url, decode_responses=True)
     app.state.redis = redis_client 
+    
     yield   
+    
+    await redis_client.aclose()
     print("Shutting down...")
 
 
