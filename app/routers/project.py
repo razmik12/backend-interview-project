@@ -8,16 +8,16 @@ from app.services.project_service import ProjectService
 
 
 
-router = APIRouter(prefix="/project",tags=["project"])
+router = APIRouter(prefix="/projects",tags=["projects"])
 
 
 
-@router.post("/create",response_model=ProjectOut,status_code=status.HTTP_201_CREATED)
+@router.post("",response_model=ProjectOut,status_code=status.HTTP_201_CREATED)
 async def create_project(data:ProjectCreate,service:ProjectService = Depends(get_project_services),user:UserORM = Depends(get_current_user)):
     return await service.create_project(data=data,owner_id=user.id)
 
 
-@router.get("/project",response_model=list[ProjectOut],status_code=status.HTTP_200_OK)
+@router.get("",response_model=list[ProjectOut],status_code=status.HTTP_200_OK)
 async def get_my_projects(service:ProjectService = Depends(get_project_services),user:UserORM = Depends(get_current_user)):
     return await service.list_my_projects(user_id=user.id)
 
@@ -28,15 +28,16 @@ async def get_all_projects(project_id:UUID,service:ProjectService = Depends(get_
     return await service.get_project_detail(project_id=project_id,user_id=user.id)
 
 
-@router.patch("/update/{project_id}",response_model=ProjectOut,status_code=status.HTTP_202_ACCEPTED)
+@router.patch("/{project_id}",response_model=ProjectOut,status_code=status.HTTP_200_OK)
 async def update_project(data:ProjectUpdate,project_id:UUID,service:ProjectService = Depends(get_project_services),user:UserORM = Depends(get_current_user)):
     return await service.update_project(project_id=project_id,user_id=user.id,data=data)
 
 
 
-@router.delete("/update/{project_id}",status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/{project_id}",status_code=status.HTTP_204_NO_CONTENT)
 async def delete_project(project_id:UUID,service:ProjectService = Depends(get_project_services),user:UserORM = Depends(get_current_user)):
-    return await service.delete_project(project_id=project_id,user_id=user.id)
+     await service.delete_project(project_id=project_id,user_id=user.id)
+     
 
 
 @router.post("/{project_id}/members",response_model=MemberOut,status_code=status.HTTP_201_CREATED)

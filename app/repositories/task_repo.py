@@ -36,6 +36,10 @@ class TaskRepository:
     async def update(self,task:TaskORM,data:dict)->TaskORM:
         for key,value in data.items():
             setattr(task,key,value)
+        
+        await self.session.flush()
+        await self.session.refresh(task)
+        
         return task 
     
     async def delete(self,task:TaskORM)->None:

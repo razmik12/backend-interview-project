@@ -1,7 +1,6 @@
 from uuid import UUID
 from app.dependencies import get_task_service, get_current_user
 from fastapi import APIRouter, Depends, status
-from app.models.task import TaskORM
 from app.models.user import UserORM
 from app.schemas.task import TaskCreate, TaskOut, TaskFilter,TaskStatusUpdate,TaskUpdate
 from app.services.task_service import TaskService
@@ -31,4 +30,5 @@ async def task_update(data:TaskUpdate,project_id:UUID,task_id:UUID,service:TaskS
 
 @router.delete("/tasks/{task_id}",status_code=status.HTTP_204_NO_CONTENT)
 async def task_delete(task_id:UUID,service:TaskService = Depends(get_task_service),user:UserORM = Depends(get_current_user)):
-    return await service.delete_task(task_id=task_id,owner_id=user.id)
+     await service.delete_task(task_id=task_id,owner_id=user.id)
+     

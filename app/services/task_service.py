@@ -57,12 +57,12 @@ class TaskService:
         
     async def update_status(self,data:TaskStatusUpdate,actor_id:UUID,task_id:UUID,project_id:UUID)->TaskORM:
         async with self.uow as uow:
-            task = await uow.task_repo.get_by_id(task_id=task_id)
+            task = await uow.task_repo.get_by_id(task_id=task_id)          
             if not task:
                 raise TaskNotFoundError()
-            project = await uow.project_repo.get_by_id(project_id=project_id)
+            project = await uow.project_repo.get_by_id(project_id=project_id)       
             if not project:
-                raise ProjectNotFoundError()
+                raise ProjectNotFoundError()       
             if project.id != task.project_id:
                 raise ProjectNotFoundError()
             if  actor_id != project.owner_id and actor_id != task.assigned_id :
@@ -78,6 +78,7 @@ class TaskService:
             if not task:
                 raise TaskNotFoundError()
             project = await uow.project_repo.get_by_id(project_id=task.project_id)
+            print("PROJECT:", project)
             if not project:
                 raise ProjectNotFoundError()
             if project.owner_id != owner_id:

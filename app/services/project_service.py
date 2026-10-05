@@ -16,7 +16,7 @@ class ProjectService:
             await uow.member_repo.create_member(project_id = project.id, user_id = owner_id, role = ProjectMemberRole.OWNER)
             return project
 
-    async def list_my_projects(self,user_id:UUID)->list[ProjectOut]:
+    async def list_my_projects(self,user_id:UUID)->list[ProjectORM]:
         async with self.uow as uow:
             projects = await  uow.project_repo.get_projects(user_id=user_id)
             return projects

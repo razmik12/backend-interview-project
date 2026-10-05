@@ -34,3 +34,7 @@ class UserAlreadyMemberError(AppError):
             message="User already exists in project",
             code="ALREADY_EXISTS",
             status_code=status.HTTP_409_CONFLICT,)
+        
+        
+
+    

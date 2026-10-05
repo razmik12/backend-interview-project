@@ -1,3 +1,5 @@
+from typing import Literal
+
 from pydantic import BaseModel,EmailStr,Field,ConfigDict
 import uuid
 from datetime import datetime
@@ -22,3 +24,16 @@ class UserLogin(BaseModel):
 class TokenResponse(BaseModel):
     access_token:str
     token_type:str = "bearer"
+    
+    
+class RefreshPayload(BaseModel):
+    sub: uuid.UUID
+    session_id: uuid.UUID
+    type:str = "refresh_token"
+    
+    
+
+class UserTestData(BaseModel):
+    email:EmailStr
+    full_name:str
+    password:str

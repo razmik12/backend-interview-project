@@ -1,6 +1,3 @@
-from fastapi import status
-
-
 class AppError(Exception):
     def __init__(self, message: str, code: str, status_code: int):
         self.message = message
