@@ -1,42 +1,56 @@
-name: CI
+services:
+  app:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/app
+    env_file:
+      - .env
 
-on:
-  push:
-    branches:
-      - master
-  pull_request:
-    branches:
-      - master
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
 
-jobs:
-  test:
-    runs-on: ubuntu-latest
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
 
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+  postgres:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
 
-      - name: Create .env
-        run: |
-          cat > .env << EOF
-          POSTGRES_USER=test_user
-          POSTGRES_PASSWORD=test_password
-          POSTGRES_DB=app_db
-          SECRET_KEY=test_secret_key
-          ALGORITHM=HS256
-          access_token_expire_minutes=30
-          refresh_token_expire_days=7
-          REDIS_HOST=redis
-          REDIS_PORT=6379
-          TEST_POSTGRES_DB=test_db
-          EOF
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
-      - name: Start containers
-        run: docker compose up -d --build
+  postgres_test:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${TEST_POSTGRES_DB}
+    ports:
+      - "5433:5432"
 
-      - name: Run tests
-        run: docker compose exec -T app pytest
-
-      - name: Stop containers
-        if: always()
-        run: docker compose down -v
+volumes:
+  postgres_data:
