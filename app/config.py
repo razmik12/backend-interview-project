@@ -31,7 +31,7 @@ class Settings(BaseSettings):
     
     @property
     def test_database_url(self) -> str:
-        return f"postgresql+asyncpg://{self.db_user}:{self.db_psw}@postgres_test:5432/{self.test_db_name}"
+        return f"postgresql+asyncpg://{self.db_user}:{self.db_psw}@localhost:5432/{self.test_db_name}"
 
 
 
