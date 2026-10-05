@@ -1,61 +1,42 @@
-services:
-  app: 
-    build:
-      context: .
-      dockerfile: docker/Dockerfile
-    ports:
-      - "8000:8000"
-    volumes:
-      - .:/app
-    env_file:
-      - .env
-      
-    depends_on:
-      postgres:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-  
-  redis:
-    image: redis:7-alpine
-    ports:
-      - "6379:6379"
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 5s
-      timeout: 3s
-      retries: 5
-  
-  postgres:
-    image: postgres:15
-    environment:
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_DB: ${POSTGRES_DB}
-    
-    ports:
-      - "5432:5432"
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
-      interval: 5s
-      timeout: 5s
-      retries: 5
+name: CI
 
-  postgres_test:
-    image: postgres:15
-    environment:
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_DB: ${TEST_POSTGRES_DB}
-    ports:
-      - "5433:5432"
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
 
+jobs:
+  test:
+    runs-on: ubuntu-latest
 
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
+      - name: Create .env
+        run: |
+          cat > .env << EOF
+          POSTGRES_USER=test_user
+          POSTGRES_PASSWORD=test_password
+          POSTGRES_DB=app_db
+          SECRET_KEY=test_secret_key
+          ALGORITHM=HS256
+          access_token_expire_minutes=30
+          refresh_token_expire_days=7
+          REDIS_HOST=redis
+          REDIS_PORT=6379
+          TEST_POSTGRES_DB=test_db
+          EOF
 
+      - name: Start containers
+        run: docker compose up -d --build
 
-volumes:
-  postgres_data:
+      - name: Run tests
+        run: docker compose exec -T app pytest
 
+      - name: Stop containers
+        if: always()
+        run: docker compose down -v
