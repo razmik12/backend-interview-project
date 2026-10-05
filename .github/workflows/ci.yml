@@ -13,6 +13,19 @@ jobs:
     test:
         runs-on: ubuntu-latest
 
+        env:
+            POSTGRES_PASSWORD: your_postgres_password
+            POSTGRES_USER: your_postgres_user
+            POSTGRES_DB: your_postgres_db
+            SECRET_KEY: test_secret_key
+            ALGORITHM: HS256
+            access_token_expire_minutes: 30
+            refresh_token_expire_days: 7
+            REDIS_HOST: redis
+            REDIS_PORT: 6379
+            TEST_POSTGRES_DB: test_db
+
+
         services:
             postgres_test:
                 image: postgres:15
