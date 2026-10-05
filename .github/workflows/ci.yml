@@ -21,7 +21,7 @@ jobs:
             ALGORITHM: HS256
             access_token_expire_minutes: 30
             refresh_token_expire_days: 7
-            REDIS_HOST: redis
+            REDIS_HOST: localhost
             REDIS_PORT: 6379
             TEST_POSTGRES_DB: test_db
 
@@ -55,6 +55,10 @@ jobs:
                   python -m pip install --upgrade pip
                   pip install -r requirements.txt
 
+            - name: Create test database
+              run: |
+                  PGPASSWORD=your_postgres_password psql -h localhost -U your_postgres_user -d your_postgres_db -c "CREATE DATABASE test_db;"
+            
             - name: Run tests           
               run: |
                 PYTHONPATH=. pytest
