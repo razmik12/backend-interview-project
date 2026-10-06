@@ -35,7 +35,7 @@ jobs:
         run: docker compose up -d --build
 
       - name: Run tests
-        run: docker compose exec -T app pytest
+        run: docker compose exec -T app uv run pytest
 
       - name: Stop containers
         if: always()
