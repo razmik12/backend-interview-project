@@ -1,5 +1,6 @@
-from app.exceptions.app_exception import AppError
 from fastapi import status
+
+from app.exceptions.app_exception import AppError
 
 
 class CommentNotFoundError(AppError):
@@ -9,5 +10,3 @@ class CommentNotFoundError(AppError):
             code="NOT_FOUND",
             status_code=status.HTTP_404_NOT_FOUND,
         )
-        
-        

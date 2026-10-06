@@ -1,5 +1,6 @@
-from app.exceptions.app_exception import AppError
 from fastapi import status
+
+from app.exceptions.app_exception import AppError
 
 
 class TaskNotFoundError(AppError):
@@ -7,9 +8,10 @@ class TaskNotFoundError(AppError):
         super().__init__(
             message="Task not found",
             code="NOT_FOUND",
-            status_code=status.HTTP_404_NOT_FOUND,)
-        
-        
+            status_code=status.HTTP_404_NOT_FOUND,
+        )
+
+
 class UserNotProjectMemberError(AppError):
     def __init__(self):
         super().__init__(
@@ -19,12 +21,10 @@ class UserNotProjectMemberError(AppError):
         )
 
 
-
-
-
 class NotAllowedError(AppError):
     def __init__(self):
-            super().__init__(
-                message="Not allowed",
-                code="NOT_ALLOWED",
-                status_code=status.HTTP_403_FORBIDDEN,)
+        super().__init__(
+            message="Not allowed",
+            code="NOT_ALLOWED",
+            status_code=status.HTTP_403_FORBIDDEN,
+        )

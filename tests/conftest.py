@@ -2,6 +2,7 @@ from typing import Any
 
 import pytest_asyncio
 from httpx import ASGITransport, AsyncClient
+from redis.asyncio import Redis
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 
 from app.config import settings
@@ -9,45 +10,35 @@ from app.core.redis_app import get_redis
 from app.database import Base, get_db
 from app.main import app
 from app.schemas.user import UserTestData
-from redis.asyncio import Redis
-
-
-
 
 
 @pytest_asyncio.fixture(scope="function")
 async def test_redis():
-    redis = Redis.from_url(
-        url = settings.test_redis_url,
-        decode_responses = True
-    )
+    redis = Redis.from_url(url=settings.test_redis_url, decode_responses=True)
+
     async def get_test_redis():
         yield redis
-        
+
     app.dependency_overrides[get_redis] = get_test_redis
-    
+
     yield redis
-    
+
     await redis.flushdb()
     await redis.aclose()
-    
 
 
 @pytest_asyncio.fixture()
 async def test_engine():
-    engine = create_async_engine(
-        url=settings.test_database_url
-    )
+    engine = create_async_engine(url=settings.test_database_url)
 
     yield engine
 
     await engine.dispose()
 
 
-
 @pytest_asyncio.fixture
 async def test_get_db(test_engine):
-    
+
     connection = await test_engine.connect()
     transaction = await connection.begin()
 
@@ -77,17 +68,15 @@ async def database_connect(test_engine):
         await conn.run_sync(Base.metadata.create_all)
 
 
-
-
 @pytest_asyncio.fixture
-async def client(test_get_db,test_redis):
+async def client(test_get_db, test_redis):
     async with AsyncClient(
         base_url="http://test",
         transport=ASGITransport(app=app),
     ) as client:
         yield client
-        
-   
+
+
 @pytest_asyncio.fixture
 async def user_data() -> UserTestData:
     return UserTestData(
@@ -127,9 +116,7 @@ async def login_user(
 
 @pytest_asyncio.fixture
 async def auth_headers(login_user: dict[str, Any]):
-    return {
-        "Authorization": f"Bearer {login_user['access_token']}"
-    }
+    return {"Authorization": f"Bearer {login_user['access_token']}"}
 
 
 @pytest_asyncio.fixture
@@ -141,23 +128,19 @@ async def auth_client(
     return client
 
 
-
 @pytest_asyncio.fixture
 async def user_data_two():
     return UserTestData(
-        email="new_razmapian73@gmail.com",
-        full_name="Ramzec12",
-        password="levseeva01"
+        email="new_razmapian73@gmail.com", full_name="Ramzec12", password="levseeva01"
     )
-    
+
+
 @pytest_asyncio.fixture
-async def user_two(user_data_two:UserTestData,client: AsyncClient):
-    response = await client.post(url="/auth/register",
-                                 json=user_data_two.model_dump())
+async def user_two(user_data_two: UserTestData, client: AsyncClient):
+    response = await client.post(url="/auth/register", json=user_data_two.model_dump())
     return response.json()
 
 
-    
 @pytest_asyncio.fixture
 async def login_user_two(
     client: AsyncClient,
@@ -171,37 +154,24 @@ async def login_user_two(
             "password": user_data_two.password,
         },
     )
-    return response.json()  
-
+    return response.json()
 
 
 @pytest_asyncio.fixture
 async def projects_data():
-    return {
-        "name":"projects_name",
-        "description":"projects_description"
-    }
-
+    return {"name": "projects_name", "description": "projects_description"}
 
 
 @pytest_asyncio.fixture
 async def created_project(
-    client:AsyncClient,
-    login_user_two:dict[str,Any],
-    projects_data:dict[str,Any]
+    client: AsyncClient, login_user_two: dict[str, Any], projects_data: dict[str, Any]
 ):
     token = login_user_two["access_token"]
-    response = await client.post("/projects",
-                                 headers={"Authorization": f"Bearer {token}"},
-                                 json=projects_data)
-    
+    response = await client.post(
+        "/projects", headers={"Authorization": f"Bearer {token}"}, json=projects_data
+    )
+
     return response.json()
-
-
-
-
-
-
 
 
 @pytest_asyncio.fixture
@@ -217,7 +187,9 @@ async def created_task(client: AsyncClient, login_user_two, created_project):
 
 
 @pytest_asyncio.fixture
-async def created_comment(client: AsyncClient, login_user_two, created_project, created_task):
+async def created_comment(
+    client: AsyncClient, login_user_two, created_project, created_task
+):
     token = login_user_two["access_token"]
     task_id = created_task["id"]
     response = await client.post(

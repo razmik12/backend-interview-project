@@ -4,7 +4,7 @@ from httpx import AsyncClient
 
 @pytest.mark.asyncio
 async def test_create_comment(
-    client:AsyncClient,
+    client: AsyncClient,
     login_user_two,
     user_two,
     created_task,
@@ -27,7 +27,7 @@ async def test_create_comment(
 
 @pytest.mark.asyncio
 async def test_create_comment_forbidden(
-    client:AsyncClient,
+    client: AsyncClient,
     login_user,
     created_task,
 ):
@@ -54,7 +54,7 @@ async def test_create_comment_not_found(client, login_user_two):
 
 @pytest.mark.asyncio
 async def test_get_comments(
-    client:AsyncClient,
+    client: AsyncClient,
     login_user_two,
     created_task,
     created_comment,
@@ -75,7 +75,7 @@ async def test_get_comments(
 
 @pytest.mark.asyncio
 async def test_get_comments_forbidden(
-    client:AsyncClient,
+    client: AsyncClient,
     login_user,
     created_task,
 ):
@@ -99,7 +99,7 @@ async def test_get_comments_not_found(client, login_user_two):
 
 @pytest.mark.asyncio
 async def test_delete_comment(
-    client:AsyncClient,
+    client: AsyncClient,
     login_user_two,
     created_comment,
 ):
@@ -112,7 +112,7 @@ async def test_delete_comment(
 
 
 @pytest.mark.asyncio
-async def test_delete_comment_not_found(client:AsyncClient, login_user_two):
+async def test_delete_comment_not_found(client: AsyncClient, login_user_two):
     response = await client.delete(
         "/comments/00000000-0000-0000-0000-000000000000",
         headers={"Authorization": f"Bearer {login_user_two['access_token']}"},

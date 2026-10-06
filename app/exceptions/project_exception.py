@@ -1,5 +1,6 @@
-from app.exceptions.app_exception import AppError
 from fastapi import status
+
+from app.exceptions.app_exception import AppError
 
 
 class ProjectNotFoundError(AppError):
@@ -10,6 +11,7 @@ class ProjectNotFoundError(AppError):
             status_code=status.HTTP_404_NOT_FOUND,
         )
 
+
 class NotProjectMemberError(AppError):
     def __init__(self):
         super().__init__(
@@ -18,6 +20,7 @@ class NotProjectMemberError(AppError):
             status_code=status.HTTP_403_FORBIDDEN,
         )
 
+
 class NotProjectOwnerError(AppError):
     def __init__(self):
         super().__init__(
@@ -25,7 +28,6 @@ class NotProjectOwnerError(AppError):
             code="NOT_PROJECT_OWNER",
             status_code=status.HTTP_403_FORBIDDEN,
         )
-        
 
 
 class UserAlreadyMemberError(AppError):
@@ -33,8 +35,5 @@ class UserAlreadyMemberError(AppError):
         super().__init__(
             message="User already exists in project",
             code="ALREADY_EXISTS",
-            status_code=status.HTTP_409_CONFLICT,)
-        
-        
-
-    
+            status_code=status.HTTP_409_CONFLICT,
+        )

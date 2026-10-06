@@ -1,8 +1,11 @@
+import uuid
 from uuid import UUID
+
 from redis.asyncio import Redis
+
 from app.exceptions.general_exception import RateLimitExceededError
 from app.schemas.general import Prefix
-import uuid
+
 
 class RedisRepository:
     def __init__(self, redis: Redis):
@@ -44,13 +47,8 @@ class RedisRepository:
 
         await self.redis.delete(key)
 
-    async def rate_limiting(
-        self,
-        ttl: int,
-        limit: int,
-        identifier:str
-    ) -> int:
-        key =  f"{Prefix.RATE_LIMIT.value}:{identifier}"
+    async def rate_limiting(self, ttl: int, limit: int, identifier: str) -> int:
+        key = f"{Prefix.RATE_LIMIT.value}:{identifier}"
 
         count = await self.redis.incr(name=key)
 
@@ -64,27 +62,22 @@ class RedisRepository:
             raise RateLimitExceededError()
 
         return count
-    
-    async def acquire_lock(
-        self,
-        session_id:UUID,
-        ttl:int | None
-    )->str|None:
+
+    async def acquire_lock(self, session_id: UUID, ttl: int | None) -> str | None:
         token = str(uuid.uuid4())
-        key = self._key(id=session_id,prefix=Prefix.LOCK)
-        
-        acquired = await self.redis.set(key,token,nx=True,ex=ttl)
-        
+        key = self._key(id=session_id, prefix=Prefix.LOCK)
+
+        acquired = await self.redis.set(key, token, nx=True, ex=ttl)
+
         return token if acquired else None
-    
-    
-    async def release_lock(self,token:str,session_id:UUID):
-         
+
+    async def release_lock(self, token: str, session_id: UUID):
+
         key = self._key(
             id=session_id,
             prefix=Prefix.LOCK,
-            )
-         
+        )
+
         script = """
                 local token = redis.call("GET", KEYS[1])
                 if token == ARGV[1] then
@@ -93,7 +86,6 @@ class RedisRepository:
 
             return 0
 """
-        result = await self.redis.eval(script,1,key,token)
-         
+        result = await self.redis.eval(script, 1, key, token)
+
         return result
-        

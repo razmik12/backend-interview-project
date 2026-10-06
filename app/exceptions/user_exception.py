@@ -1,5 +1,7 @@
-from app.exceptions.app_exception import AppError
 from fastapi import status
+
+from app.exceptions.app_exception import AppError
+
 
 class EmailAlreadyExistsError(AppError):
     def __init__(self):

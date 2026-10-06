@@ -1,5 +1,4 @@
 import pytest
-from httpx import AsyncClient
 
 
 @pytest.mark.asyncio
@@ -142,9 +141,7 @@ async def test_delete_task(
 ):
     response = await client.delete(
         f"/projects/tasks/{created_task['id']}",
-        headers={
-            "Authorization": f"Bearer {login_user_two['access_token']}"
-        },
+        headers={"Authorization": f"Bearer {login_user_two['access_token']}"},
     )
 
     assert response.status_code == 204
@@ -158,9 +155,7 @@ async def test_delete_task_forbidden(
 ):
     response = await client.delete(
         f"/projects/tasks/{created_task['id']}",
-        headers={
-            "Authorization": f"Bearer {login_user['access_token']}"
-        },
+        headers={"Authorization": f"Bearer {login_user['access_token']}"},
     )
 
     assert response.status_code == 403

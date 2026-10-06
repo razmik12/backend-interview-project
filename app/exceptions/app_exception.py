@@ -5,5 +5,3 @@ class AppError(Exception):
         self.status_code = status_code
 
         super().__init__(self.message)
-
-

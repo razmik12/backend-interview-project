@@ -1,4 +1,50 @@
+[project]
+name = "pet-project"
+version = "0.1.0"
+description = "Backend pet project"
+readme = "README.md"
+requires-python = ">=3.11,<3.12"
+
+dependencies = [
+    "alembic",
+    "asyncpg",
+    "bcrypt",
+    "fastapi",
+    "passlib",
+    "pwdlib[argon2]",
+    "pydantic-settings",
+    "pydantic[email]>=2.13.5",
+    "python-jose",
+    "python-multipart",
+    "redis",
+    "sqlalchemy[asyncio]",
+    "uvicorn",
+]
+
+
+
+[dependency-groups]
+dev = [
+    "httpx",
+    "mypy",
+    "pre-commit",
+    "pytest",
+    "pytest-asyncio",
+    "pytest-cov",
+    "ruff",
+]
+
+
 [tool.pytest.ini_options]
-testpaths = ["tests"]
 pythonpath = ["."]
+testpaths = ["tests"]
 asyncio_mode = "auto"
+
+
+
+[tool.ruff.lint.flake8-bugbear]
+extend-immutable-calls = ["fastapi.Depends", "fastapi.params.Depends"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
