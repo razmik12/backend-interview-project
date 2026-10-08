@@ -1,4 +1,5 @@
-from sqlalchemy import UUID
+from uuid import UUID
+from sqlalchemy.exc import IntegrityError
 
 from app.core.uow import UnitOfWork
 from app.exceptions.project_exception import (
@@ -84,10 +85,12 @@ class ProjectService:
             )
             if existing_member:
                 raise UserAlreadyMemberError()
-
-            member = await uow.member_repo.create_member(
-                project_id=project.id,
-                user_id=data.user_id,
-                role=ProjectMemberRole.MEMBER,
-            )
+            try:
+                member = await uow.member_repo.create_member(
+                    project_id=project.id,
+                    user_id=data.user_id,
+                    role=ProjectMemberRole.MEMBER,            
+                )
+            except IntegrityError:
+                    raise UserAlreadyMemberError()
             return member

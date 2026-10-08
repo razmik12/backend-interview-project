@@ -1,4 +1,4 @@
-from sqlalchemy import UUID
+from uuid import UUID
 
 from app.core.uow import UnitOfWork
 from app.exceptions.comment_exception import CommentNotFoundError

@@ -1,7 +1,7 @@
 import uuid
 from datetime import datetime
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from app.models.projectmember import ProjectMemberRole
 
@@ -35,6 +35,13 @@ class ProjectDetailOut(ProjectOut):
 class ProjectUpdate(BaseModel):
     name: str | None = None
     description: str | None = None
+    
+    @field_validator("name")
+    @classmethod
+    def name_not_null(cls, v):
+        if v is None:
+            raise ValueError("name cannot be null")
+        return v
 
 
 class MemberAdd(BaseModel):

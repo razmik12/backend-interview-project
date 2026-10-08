@@ -1,4 +1,4 @@
-from sqlalchemy import UUID
+from uuid import UUID
 
 from app.core.uow import UnitOfWork
 from app.exceptions.project_exception import (
@@ -11,6 +11,7 @@ from app.exceptions.task_exception import (
     TaskNotFoundError,
     UserNotProjectMemberError,
 )
+from app.models.projectmember import ProjectMemberRole
 from app.models.task import TaskORM
 from app.schemas.task import TaskCreate, TaskFilter, TaskStatusUpdate, TaskUpdate
 
@@ -71,6 +72,7 @@ class TaskService:
             task = await uow.task_repo.get_by_id(task_id=task_id)
             if not task:
                 raise TaskNotFoundError()
+            
             if task.project_id != project_id:
                 raise TaskNotFoundError()
             member = await uow.member_repo.get_member(
@@ -78,8 +80,9 @@ class TaskService:
             )
             if not member:
                 raise UserNotProjectMemberError()
-            if member.role != "owner":
+            if member.role != ProjectMemberRole.OWNER:
                 raise NotProjectOwnerError()
+            
             updated_task = await uow.task_repo.update(
                 task=task, data=data.model_dump(exclude_unset=True)
             )
