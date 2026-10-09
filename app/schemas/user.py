@@ -1,7 +1,7 @@
 import uuid
 from datetime import datetime
 
-from pydantic import BaseModel, ConfigDict, EmailStr, Field
+from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator
 
 
 class UserCreate(BaseModel):
@@ -9,6 +9,10 @@ class UserCreate(BaseModel):
     full_name: str = Field(min_length=1, max_length=255)
     password: str = Field(min_length=8, max_length=128)
 
+    @field_validator("email")
+    @classmethod
+    def lower_email(cls, v: str) -> str:
+        return v.lower()
 
 class UserOut(BaseModel):
     model_config = ConfigDict(from_attributes=True)
@@ -21,6 +25,11 @@ class UserOut(BaseModel):
 class UserLogin(BaseModel):
     email: EmailStr
     password: str = Field(min_length=8, max_length=128)
+    
+    @field_validator("email")
+    @classmethod
+    def lower_email(cls, v: str) -> str:
+        return v.lower()
 
 
 class TokenResponse(BaseModel):

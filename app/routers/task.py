@@ -76,10 +76,11 @@ async def task_update(
     )
 
 
-@router.delete("/tasks/{task_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/{project_id}/tasks/{task_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def task_delete(
+    project_id:UUID,
     task_id: UUID,
     service: TaskService = Depends(get_task_service),
     user: UserORM = Depends(get_current_user),
 ):
-    await service.delete_task(task_id=task_id, owner_id=user.id)
+    await service.delete_task(project_id=project_id,task_id=task_id, actor_id=user.id)

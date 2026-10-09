@@ -6,13 +6,13 @@ services:
     ports:
       - "8000:8000"
     volumes:
-      - .:/app
+      - .:/backend
+      - /backend/.venv
+      - ./logs:/backend/logs
     env_file:
       - .env
     depends_on:
       postgres:
-        condition: service_healthy
-      postgres_test:
         condition: service_healthy
       redis:
         condition: service_healthy
@@ -46,6 +46,8 @@ services:
 
   postgres_test:
     image: postgres:15
+    profiles:
+      - test
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}

@@ -12,7 +12,7 @@ from app.exceptions.user_exception import UserNotFoundError
 from app.models.project import ProjectORM
 from app.models.projectmember import ProjectMemberORM, ProjectMemberRole
 from app.schemas.projects import MemberAdd, ProjectCreate, ProjectUpdate
-
+from .permissions import require_member,require_owner
 
 class ProjectService:
     def __init__(self, uow: UnitOfWork):
@@ -35,14 +35,16 @@ class ProjectService:
 
     async def get_project_detail(self, project_id: UUID, user_id: UUID) -> ProjectORM:
         async with self.uow as uow:
-            project = await uow.project_repo.get_with_members(project_id=project_id)
-            if not project:
-                raise ProjectNotFoundError()
-            member = await uow.member_repo.get_member(
-                project_id=project.id, user_id=user_id
-            )
-            if not member:
-                raise NotProjectMemberError()
+            
+            await require_member(
+            uow,
+            project_id=project_id,
+            user_id=user_id,
+        )
+
+            project = await uow.project_repo.get_with_members(
+            project_id=project_id
+        )
 
             return project
 

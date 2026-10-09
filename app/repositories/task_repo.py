@@ -45,7 +45,10 @@ class TaskRepository:
         if assigned_id is not None:
             query = query.where(TaskORM.assigned_id == assigned_id)
 
-        query = query.limit(limit).offset(offset)
+        query = query.order_by(
+        TaskORM.created_at,
+        TaskORM.id,
+        ).limit(limit).offset(offset)
 
         result = await self.session.execute(query)
         return list(result.scalars().all())

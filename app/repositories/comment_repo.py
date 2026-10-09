@@ -20,9 +20,11 @@ class CommentRepository:
         return await self.session.get(CommentORM, comment_id)
 
     async def list_by_task(self, task_id: UUID) -> list[CommentORM]:
-        result = await self.session.execute(
-            select(CommentORM).where(CommentORM.task_id == task_id)
-        )
+        result = await self.session.execute(select(CommentORM)
+        .where(CommentORM.task_id == task_id).order_by(
+            CommentORM.created_at,
+            CommentORM.id,
+                ))
         return result.scalars().all()
 
     async def delete(self, comment: CommentORM) -> None:

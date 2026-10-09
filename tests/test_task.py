@@ -133,18 +133,6 @@ async def test_update_task_status(
     assert task["status"] == "done"
 
 
-@pytest.mark.asyncio
-async def test_delete_task(
-    client,
-    login_user_two,
-    created_task,
-):
-    response = await client.delete(
-        f"/projects/tasks/{created_task['id']}",
-        headers={"Authorization": f"Bearer {login_user_two['access_token']}"},
-    )
-
-    assert response.status_code == 204
 
 
 @pytest.mark.asyncio
@@ -152,20 +140,31 @@ async def test_delete_task_forbidden(
     client,
     login_user,
     created_task,
+    created_project
 ):
     response = await client.delete(
-        f"/projects/tasks/{created_task['id']}",
+        f"/projects/{created_project['id']}/tasks/{created_task['id']}",
         headers={"Authorization": f"Bearer {login_user['access_token']}"},
     )
 
     assert response.status_code == 403
 
 
-@pytest.mark.asyncio
-async def test_delete_task_not_found(client, login_user_two):
-    response = await client.delete(
-        "/tasks/00000000-0000-0000-0000-000000000000",
+
+    
+    
+    
+    
+async def test_delete_task(client, login_user_two, created_project, created_task):
+    r = await client.delete(
+        f"/projects/{created_project['id']}/tasks/{created_task['id']}",
         headers={"Authorization": f"Bearer {login_user_two['access_token']}"},
     )
+    assert r.status_code == 204
 
-    assert response.status_code == 404
+async def test_delete_task_not_found(client, login_user_two, created_project):
+    r = await client.delete(
+        f"/projects/{created_project['id']}/tasks/00000000-0000-0000-0000-000000000000",
+        headers={"Authorization": f"Bearer {login_user_two['access_token']}"},
+    )
+    assert r.status_code == 404

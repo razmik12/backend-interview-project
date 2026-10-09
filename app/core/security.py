@@ -20,6 +20,9 @@ def verify_password(password: str, hashed_password: str) -> bool:
     return config_hash.verify(password, hashed_password)
 
 
+DUMMY_HASH = hash_password("fake-password")
+
+
 def create_access_token(user_id: uuid.UUID) -> str:
     time_life = datetime.now(UTC) + timedelta(minutes=settings.access_exp)
     payload = {

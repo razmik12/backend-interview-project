@@ -1,12 +1,14 @@
 name: CI
 
+
 on:
   push:
     branches:
-      - master
+      - main
   pull_request:
     branches:
-      - master
+      - main
+
 
 jobs:
   test:
@@ -15,28 +17,58 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-
-      - name: Create .env
+      
+      - name: create .env
         run: |
-          cat > .env << EOF
-          POSTGRES_USER=test_user
-          POSTGRES_PASSWORD=test_password
-          POSTGRES_DB=app_db
-          SECRET_KEY=test_secret_key
+          cat > .env <<'EOF'
+          POSTGRES_USER=your_postgres_user
+          POSTGRES_PASSWORD=your_postgres_password
+          POSTGRES_DB=your_postgres_db
+          POSTGRES_HOST=postgres
+          POSTGRES_PORT=5432
+          TEST_POSTGRES_DB=test_db
+          TEST_POSTGRES_HOST=postgres_test
+          TEST_POSTGRES_PORT=5432
+          SECRET_KEY=your_secret_key
           ALGORITHM=HS256
           access_token_expire_minutes=30
           refresh_token_expire_days=7
           REDIS_HOST=redis
           REDIS_PORT=6379
-          TEST_POSTGRES_DB=test_db
+          CORS_ORIGINS=["http://localhost:3000"]
+          COOKIE_SECURE=false
           EOF
+        
+      
+      - name: docker start
+        run: docker compose --profile test up -d --build --wait
 
-      - name: Start containers
-        run: docker compose up -d --build
+      - name: ruff check
+        run: docker compose exec -T app uv run ruff check .
+        
+      - name: ruff format check
+        run: docker compose exec -T app uv run ruff format --check .
+        
+      - name: check docker
+        run: docker compose ps
 
-      - name: Run tests
+      - name: run migratinos
+        run: docker compose exec -T app uv run alembic upgrade head
+        
+      - name: run tests
         run: docker compose exec -T app uv run pytest
-
-      - name: Stop containers
+        
+      - name: Check logs
+        if: failure()
+        run: docker compose logs --no-color
+      
+      - name: Stop Docker
         if: always()
         run: docker compose down -v
+          
+      
+        
+
+
+      
+      

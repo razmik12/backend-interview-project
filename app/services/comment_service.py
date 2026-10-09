@@ -10,7 +10,7 @@ from app.exceptions.task_exception import (
 )
 from app.models.comment import CommentORM
 from app.schemas.comment import CommentCreate
-
+from app.services.permissions import require_member,require_owner
 
 class CommentService:
     def __init__(self, uow: UnitOfWork):
@@ -23,11 +23,10 @@ class CommentService:
             task = await uow.task_repo.get_by_id(task_id=task_id)
             if not task:
                 raise TaskNotFoundError()
-            member = await uow.member_repo.get_member(
-                project_id=task.project_id, user_id=actor_id
-            )
-            if not member:
-                raise UserNotProjectMemberError()
+            await require_member(uow=uow,
+                                 user_id=actor_id,
+                                 project_id=task.project_id)
+            
             return await uow.comment_repo.create(
                 task_id=task.id, author_id=actor_id, text=data.text
             )
@@ -37,11 +36,10 @@ class CommentService:
             task = await uow.task_repo.get_by_id(task_id=task_id)
             if not task:
                 raise TaskNotFoundError()
-            member = await uow.member_repo.get_member(
-                project_id=task.project_id, user_id=actor_id
-            )
-            if not member:
-                raise UserNotProjectMemberError()
+            await require_member(uow=uow,
+                                 user_id=actor_id,
+                                 project_id=task.project_id)
+            
             return await uow.comment_repo.list_by_task(task_id=task.id)
 
     async def delete_comment(self, actor_id: UUID, comment_id: UUID) -> None:
@@ -52,12 +50,12 @@ class CommentService:
             task = await uow.task_repo.get_by_id(task_id=comment.task_id)
             if not task:
                 raise TaskNotFoundError()
-            project = await uow.project_repo.get_by_id(project_id=task.project_id)
 
-            if not project:
-                raise ProjectNotFoundError()
-
-            if actor_id != comment.author_id and actor_id != project.owner_id:
-                raise NotAllowedError()
+            if actor_id != comment.author_id:
+                await require_owner(
+                    uow=uow,
+                    project_id=task.project_id,
+                    user_id=actor_id,
+                )
 
             await uow.comment_repo.delete(comment=comment)

@@ -36,7 +36,7 @@ class TaskUpdate(BaseModel):
     description: str | None = Field(default=None, max_length=255)
     assigned_id: uuid.UUID | None = None
     
-    @field_validator("tutle")
+    @field_validator("title")
     @classmethod
     def title_not_null(cls,v):
         if v is None:
