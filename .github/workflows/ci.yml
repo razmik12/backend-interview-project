@@ -44,10 +44,10 @@ jobs:
         run: docker compose --profile test up -d --build --wait
 
       - name: ruff check
-        run: docker compose exec -T app uv run ruff check .
+        run: docker compose exec -T app uv run ruff check --no-cache .
         
       - name: ruff format check
-        run: docker compose exec -T app uv run ruff format --check .
+        run: docker compose exec -T app uv run ruff format --check --no-cache .
         
       - name: check docker
         run: docker compose ps
