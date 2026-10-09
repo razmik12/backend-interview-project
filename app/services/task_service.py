@@ -48,16 +48,11 @@ class TaskService:
                 description=data.description,
             )
 
-
     async def list_tasks(
         self, project_id: UUID, actor_id: UUID, filters: TaskFilter
     ) -> list[TaskORM]:
         async with self.uow as uow:
-            await require_member(
-                uow=uow,
-                user_id=actor_id,
-                project_id=project_id
-            )
+            await require_member(uow=uow, user_id=actor_id, project_id=project_id)
             return await uow.task_repo.list_by_project(
                 project_id=project_id,
                 status=filters.status,
@@ -65,29 +60,21 @@ class TaskService:
                 limit=filters.limit,
                 offset=filters.offset,
             )
-            
 
     async def update_task(
         self, data: TaskUpdate, project_id: UUID, actor_id: UUID, task_id: UUID
     ) -> TaskORM:
         async with self.uow as uow:
-            await require_owner(
-                uow=uow,
-                project_id=project_id,
-                user_id=actor_id
-            )    
+            await require_owner(uow=uow, project_id=project_id, user_id=actor_id)
             task = await uow.task_repo.get_by_id(task_id=task_id)
             if not task:
                 raise TaskNotFoundError()
             if task.project_id != project_id:
                 raise TaskNotFoundError()
-            
-            return await uow.task_repo.update(
-                task=task,
-                data=data.model_dump(exclude_unset=True)
-            )
 
-    
+            return await uow.task_repo.update(
+                task=task, data=data.model_dump(exclude_unset=True)
+            )
 
     async def update_status(
         self, data: TaskStatusUpdate, actor_id: UUID, task_id: UUID, project_id: UUID
@@ -108,7 +95,9 @@ class TaskService:
             await uow.refresh(task)
             return task
 
-    async def delete_task(self, task_id: UUID, actor_id: UUID,project_id:UUID) -> None:
+    async def delete_task(
+        self, task_id: UUID, actor_id: UUID, project_id: UUID
+    ) -> None:
         async with self.uow as uow:
             await require_owner(uow, project_id, actor_id)
             task = await uow.task_repo.get_by_id(task_id=task_id)

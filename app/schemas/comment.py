@@ -10,7 +10,7 @@ class CommentCreate(BaseModel):
 
 class CommentOut(BaseModel):
     id: uuid.UUID
-    text: str 
+    text: str
     task_id: uuid.UUID
     author_id: uuid.UUID | None = None
     created_at: datetime

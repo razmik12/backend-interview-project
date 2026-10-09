@@ -21,10 +21,8 @@ class CommentService:
             task = await uow.task_repo.get_by_id(task_id=task_id)
             if not task:
                 raise TaskNotFoundError()
-            await require_member(uow=uow,
-                                 user_id=actor_id,
-                                 project_id=task.project_id)
-            
+            await require_member(uow=uow, user_id=actor_id, project_id=task.project_id)
+
             return await uow.comment_repo.create(
                 task_id=task.id, author_id=actor_id, text=data.text
             )
@@ -34,10 +32,8 @@ class CommentService:
             task = await uow.task_repo.get_by_id(task_id=task_id)
             if not task:
                 raise TaskNotFoundError()
-            await require_member(uow=uow,
-                                 user_id=actor_id,
-                                 project_id=task.project_id)
-            
+            await require_member(uow=uow, user_id=actor_id, project_id=task.project_id)
+
             return await uow.comment_repo.list_by_task(task_id=task.id)
 
     async def delete_comment(self, actor_id: UUID, comment_id: UUID) -> None:

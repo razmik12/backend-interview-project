@@ -37,16 +37,13 @@ class ProjectService:
 
     async def get_project_detail(self, project_id: UUID, user_id: UUID) -> ProjectORM:
         async with self.uow as uow:
-            
             await require_member(
-            uow,
-            project_id=project_id,
-            user_id=user_id,
-        )
+                uow,
+                project_id=project_id,
+                user_id=user_id,
+            )
 
-            project = await uow.project_repo.get_with_members(
-            project_id=project_id
-        )
+            project = await uow.project_repo.get_with_members(project_id=project_id)
 
             return project
 
@@ -93,8 +90,8 @@ class ProjectService:
                 member = await uow.member_repo.create_member(
                     project_id=project.id,
                     user_id=data.user_id,
-                    role=ProjectMemberRole.MEMBER,            
+                    role=ProjectMemberRole.MEMBER,
                 )
             except IntegrityError:
-                    raise UserAlreadyMemberError()
+                raise UserAlreadyMemberError()
             return member

@@ -14,7 +14,7 @@ class TaskCreate(BaseModel):
 
 class TaskOut(BaseModel):
     id: uuid.UUID
-    title: str 
+    title: str
     description: str | None = None
     status: StatusEnum
     project_id: uuid.UUID
@@ -28,17 +28,17 @@ class TaskFilter(BaseModel):
     status: StatusEnum | None = None
     assigned_id: uuid.UUID | None = None
     limit: int = Field(default=20, ge=1, le=100)
-    offset: int = Field(default=0,ge=0)
+    offset: int = Field(default=0, ge=0)
 
 
 class TaskUpdate(BaseModel):
     title: str | None = Field(default=None, min_length=1, max_length=200)
     description: str | None = Field(default=None, max_length=255)
     assigned_id: uuid.UUID | None = None
-    
+
     @field_validator("title")
     @classmethod
-    def title_not_null(cls,v):
+    def title_not_null(cls, v):
         if v is None:
             raise ValueError("Title cannot be null")
         return v

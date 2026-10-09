@@ -17,7 +17,6 @@ from app.routers.task import router as task_router
 logger = logging.getLogger(__name__)
 
 
-
 @asynccontextmanager
 async def lifespan(app: FastAPI):
 

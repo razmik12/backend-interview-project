@@ -14,6 +14,7 @@ class UserCreate(BaseModel):
     def lower_email(cls, v: str) -> str:
         return v.lower()
 
+
 class UserOut(BaseModel):
     model_config = ConfigDict(from_attributes=True)
     id: uuid.UUID
@@ -25,7 +26,7 @@ class UserOut(BaseModel):
 class UserLogin(BaseModel):
     email: EmailStr
     password: str = Field(min_length=8, max_length=128)
-    
+
     @field_validator("email")
     @classmethod
     def lower_email(cls, v: str) -> str:

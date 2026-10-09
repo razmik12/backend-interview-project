@@ -9,13 +9,16 @@ from app.exceptions.project_exception import (
 from app.models.projectmember import ProjectMemberORM, ProjectMemberRole
 
 
-async def require_member(uow:UnitOfWork,user_id:UUID,project_id:UUID)->ProjectMemberORM:
+async def require_member(
+    uow: UnitOfWork, user_id: UUID, project_id: UUID
+) -> ProjectMemberORM:
     if not await uow.project_repo.get_by_id(project_id=project_id):
         raise ProjectNotFoundError()
-    member = await uow.member_repo.get_member(project_id=project_id,user_id=user_id)
+    member = await uow.member_repo.get_member(project_id=project_id, user_id=user_id)
     if not member:
         raise NotProjectMemberError()
     return member
+
 
 async def require_owner(
     uow: UnitOfWork,
@@ -32,4 +35,3 @@ async def require_owner(
         raise NotProjectOwnerError()
 
     return member
-    

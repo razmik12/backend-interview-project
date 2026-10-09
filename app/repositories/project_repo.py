@@ -26,9 +26,8 @@ class ProjectRepository:
     async def get_projects(self, user_id: UUID) -> list[ProjectORM]:
         result = await self.session.execute(
             select(ProjectORM)
-            .join(ProjectMemberORM,ProjectORM.members)
+            .join(ProjectMemberORM, ProjectORM.members)
             .where(ProjectMemberORM.user_id == user_id)
-
         )
         return list(result.scalars().all())
 

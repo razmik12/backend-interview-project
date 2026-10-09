@@ -35,7 +35,7 @@ class ProjectDetailOut(ProjectOut):
 class ProjectUpdate(BaseModel):
     name: str | None = None
     description: str | None = None
-    
+
     @field_validator("name")
     @classmethod
     def name_not_null(cls, v):
