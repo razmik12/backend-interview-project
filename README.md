@@ -49,7 +49,7 @@ git clone https://github.com/razmik12/backend-interview-project.git
 cd backend-interview-project
 ```
 
-### 2. Создание `.env`
+### 2. Создание `.env`r
 
 Создай файл `.env` в корне проекта:
 
