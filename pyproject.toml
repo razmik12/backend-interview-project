@@ -40,7 +40,8 @@ pythonpath = ["."]
 testpaths = ["tests"]
 asyncio_mode = "auto"
 
-
+[tool.ruff.lint]
+ignore = ["EXE002"]
 
 [tool.ruff.lint.flake8-bugbear]
 extend-immutable-calls = ["fastapi.Depends", "fastapi.params.Depends"]

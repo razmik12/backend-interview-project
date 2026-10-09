@@ -2,6 +2,7 @@ from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from sqlalchemy.engine import URL
 
+
 class Settings(BaseSettings):
     db_psw: str = Field(alias="POSTGRES_PASSWORD")
     db_user: str = Field(alias="POSTGRES_USER")

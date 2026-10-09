@@ -2,15 +2,13 @@ from uuid import UUID
 
 from app.core.uow import UnitOfWork
 from app.exceptions.comment_exception import CommentNotFoundError
-from app.exceptions.project_exception import ProjectNotFoundError
 from app.exceptions.task_exception import (
-    NotAllowedError,
     TaskNotFoundError,
-    UserNotProjectMemberError,
 )
 from app.models.comment import CommentORM
 from app.schemas.comment import CommentCreate
-from app.services.permissions import require_member,require_owner
+from app.services.permissions import require_member, require_owner
+
 
 class CommentService:
     def __init__(self, uow: UnitOfWork):

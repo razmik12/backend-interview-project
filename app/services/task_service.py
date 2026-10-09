@@ -11,7 +11,9 @@ from app.exceptions.task_exception import (
 )
 from app.models.task import TaskORM
 from app.schemas.task import TaskCreate, TaskFilter, TaskStatusUpdate, TaskUpdate
-from .permissions import require_member,require_owner
+
+from .permissions import require_member, require_owner
+
 
 class TaskService:
     def __init__(self, uow: UnitOfWork):

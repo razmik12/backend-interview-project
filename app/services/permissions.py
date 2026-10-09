@@ -9,7 +9,6 @@ from app.exceptions.project_exception import (
 from app.models.projectmember import ProjectMemberORM, ProjectMemberRole
 
 
-
 async def require_member(uow:UnitOfWork,user_id:UUID,project_id:UUID)->ProjectMemberORM:
     if not await uow.project_repo.get_by_id(project_id=project_id):
         raise ProjectNotFoundError()

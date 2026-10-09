@@ -1,9 +1,9 @@
 from uuid import UUID
+
 from sqlalchemy.exc import IntegrityError
 
 from app.core.uow import UnitOfWork
 from app.exceptions.project_exception import (
-    NotProjectMemberError,
     NotProjectOwnerError,
     ProjectNotFoundError,
     UserAlreadyMemberError,
@@ -12,7 +12,9 @@ from app.exceptions.user_exception import UserNotFoundError
 from app.models.project import ProjectORM
 from app.models.projectmember import ProjectMemberORM, ProjectMemberRole
 from app.schemas.projects import MemberAdd, ProjectCreate, ProjectUpdate
-from .permissions import require_member,require_owner
+
+from .permissions import require_member
+
 
 class ProjectService:
     def __init__(self, uow: UnitOfWork):
