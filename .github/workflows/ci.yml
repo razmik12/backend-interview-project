@@ -92,14 +92,5 @@ jobs:
           context: .
           dockerfile: docker/Dockerfile
           tags: ghcr.io/${{ github.repository }}:latest
-          push: true
-
-
-
-    
-      
-        
-
-
-      
+          push: true  
       
