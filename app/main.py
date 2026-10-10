@@ -1,4 +1,5 @@
 import logging
+from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
@@ -6,6 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from redis.asyncio import Redis
 
 from app.config import settings
+from app.database import engine
 from app.exceptions.app_exception import AppError
 from app.exceptions.handlers import app_exception_handler
 from app.middleware.logging import LoggingMiddleware
@@ -18,16 +20,16 @@ logger = logging.getLogger(__name__)
 
 
 @asynccontextmanager
-async def lifespan(app: FastAPI):
+async def lifespan(app: FastAPI) -> AsyncIterator[None]:
 
-    logger.warning("Starting up...")
+    logger.info("Starting up...")
     redis_client = Redis.from_url(settings.redis_url, decode_responses=True)
     app.state.redis = redis_client
 
     yield
-
+    await engine.dispose()
     await redis_client.aclose()
-    logger.warning("Shutting down...")
+    logger.info("Shutting down...")
 
 
 app = FastAPI(lifespan=lifespan)

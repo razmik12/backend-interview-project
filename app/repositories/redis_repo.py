@@ -36,7 +36,10 @@ class RedisRepository:
     ) -> str | None:
         key = self._key(id=id, prefix=prefix)
 
-        return await self.redis.get(name=key)
+        value = await self.redis.get(name=key)
+        if isinstance(value, bytes):
+            return value.decode("utf-8")
+        return value
 
     async def delete(
         self,

@@ -13,7 +13,7 @@ class TaskRepository:
     async def create(
         self,
         project_id: UUID,
-        assigned_id: UUID,
+        assigned_id: UUID | None,
         title: str,
         description: str | None = None,
     ) -> TaskORM:
@@ -27,7 +27,7 @@ class TaskRepository:
         await self.session.flush()
         return task
 
-    async def get_by_id(self, task_id) -> TaskORM | None:
+    async def get_by_id(self, task_id: UUID) -> TaskORM | None:
         return await self.session.get(TaskORM, task_id)
 
     async def list_by_project(

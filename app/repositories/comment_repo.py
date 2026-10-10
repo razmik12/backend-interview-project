@@ -28,7 +28,7 @@ class CommentRepository:
                 CommentORM.id,
             )
         )
-        return result.scalars().all()
+        return list(result.scalars().all())
 
     async def delete(self, comment: CommentORM) -> None:
         await self.session.delete(comment)

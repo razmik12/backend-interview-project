@@ -52,7 +52,7 @@ jobs:
       - name: check docker
         run: docker compose ps
 
-      - name: run migratinos
+      - name: run migration
         run: docker compose exec -T app uv run alembic upgrade head
         
       - name: run tests

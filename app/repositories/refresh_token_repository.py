@@ -1,6 +1,6 @@
 from uuid import UUID
 
-from redis import Redis
+from redis.asyncio import Redis
 
 
 class RefreshTokenRepository:
@@ -19,6 +19,8 @@ class RefreshTokenRepository:
     async def get_token(self, user_id: UUID, session_id: UUID) -> str | None:
         key = self._get_key(session_id=session_id, user_id=user_id)
         token = await self.redis.get(name=key)
+        if isinstance(token, bytes):
+            return token.decode("utf-8")
         return token
 
     async def delete_token(self, user_id: UUID, session_id: UUID) -> bool:

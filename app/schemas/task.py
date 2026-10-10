@@ -8,7 +8,7 @@ from app.models.task import StatusEnum
 
 class TaskCreate(BaseModel):
     title: str = Field(min_length=1, max_length=200)
-    description: str | None = Field(default=None, min_length=7, max_length=255)
+    description: str | None = Field(default=None, max_length=255)
     assigned_id: uuid.UUID | None = None
 
 

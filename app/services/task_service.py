@@ -67,10 +67,15 @@ class TaskService:
         async with self.uow as uow:
             await require_owner(uow=uow, project_id=project_id, user_id=actor_id)
             task = await uow.task_repo.get_by_id(task_id=task_id)
-            if not task:
+
+            if not task or task.project_id != project_id:
                 raise TaskNotFoundError()
-            if task.project_id != project_id:
-                raise TaskNotFoundError()
+            if data.assigned_id is not None:
+                member = await uow.member_repo.get_member(
+                    project_id=project_id, user_id=data.assigned_id
+                )
+                if not member:
+                    raise NotProjectMemberError()
 
             return await uow.task_repo.update(
                 task=task, data=data.model_dump(exclude_unset=True)

@@ -33,12 +33,12 @@ class ProjectDetailOut(ProjectOut):
 
 
 class ProjectUpdate(BaseModel):
-    name: str | None = None
-    description: str | None = None
+    name: str | None = Field(default=None, min_length=1, max_length=255)
+    description: str | None = Field(default=None, max_length=255)
 
     @field_validator("name")
     @classmethod
-    def name_not_null(cls, v):
+    def name_not_null(cls, v: str | None) -> str:
         if v is None:
             raise ValueError("name cannot be null")
         return v

@@ -22,9 +22,9 @@ async def login_user(
     data: UserLogin,
     service: AuthService = Depends(get_auth_service),
 ):
-    return await service.login(
-        data=data, response=response, ip_address=request.client.host
-    )
+    client = request.client
+    ip_address = client.host if client is not None else "unknown"
+    return await service.login(data=data, response=response, ip_address=ip_address)
 
 
 @router.get("/me", response_model=UserOut, status_code=status.HTTP_200_OK)
