@@ -1,5 +1,6 @@
 import asyncio
 import hmac
+import logging
 import uuid
 
 from fastapi import Response
@@ -27,6 +28,8 @@ from app.repositories.redis_repo import RedisRepository
 from app.repositories.refresh_token_repository import RefreshTokenRepository
 from app.schemas.user import TokenResponse, UserCreate, UserLogin
 
+logger = logging.getLogger(__name__)
+
 
 class AuthService:
     def __init__(
@@ -40,18 +43,27 @@ class AuthService:
         self.redis_repo = redis_repo
 
     async def register(self, data: UserCreate) -> UserORM:
+        logger.info("User registration started")
         async with self.uow as uow:
             if await uow.user_repo.get_by_email(data.email):
+                logger.warning("Registration rejected: email already exists")
                 raise EmailAlreadyExistsError()
             try:
                 hashed = await asyncio.to_thread(hash_password, password=data.password)
 
-                return await uow.user_repo.create_user(
+                user = await uow.user_repo.create_user(
                     email=data.email,
                     hashed_password=hashed,
                     full_name=data.full_name,
                 )
+
+                logger.info("User registered successfully")
+                return user
+
             except IntegrityError:
+                logger.warning(
+                    "Registration failed: database integrity constraint violation"
+                )
                 raise EmailAlreadyExistsError()
 
     def _set_refresh_cookie(self, response: Response, token: str) -> None:
@@ -68,6 +80,7 @@ class AuthService:
     async def login(
         self, data: UserLogin, response: Response, ip_address: str
     ) -> TokenResponse:
+        logger.info("Login attempt started")
         await self.redis_repo.rate_limiting(identifier=ip_address, ttl=60, limit=5)
         async with self.uow as uow:
             user = await uow.user_repo.get_by_email(email=data.email)
@@ -75,6 +88,7 @@ class AuthService:
                 await asyncio.to_thread(
                     verify_password, password=data.password, hashed_password=DUMMY_HASH
                 )
+                logger.warning("Login failed: invalid credentials")
                 raise InvalidCredentialsError()
 
             if not await asyncio.to_thread(
@@ -82,6 +96,7 @@ class AuthService:
                 password=data.password,
                 hashed_password=user.hashed_password,
             ):
+                logger.warning("Login failed: invalid credentials")
                 raise InvalidCredentialsError()
 
             session_id = uuid.uuid4()
@@ -98,6 +113,8 @@ class AuthService:
                 ttl=settings.refresh_exp * 24 * 60 * 60,
             )
 
+            logger.info("User login successful")
+
             return TokenResponse(
                 access_token=access_token,
             )
@@ -106,6 +123,7 @@ class AuthService:
         self, refresh_token: str | None, response: Response
     ) -> TokenResponse:
         if not refresh_token:
+            logger.warning("Token refresh rejected: refresh token is missing")
             raise InvalidCredentialsError()
 
         payload = decode_refresh_token(token=refresh_token)
@@ -113,6 +131,7 @@ class AuthService:
             user = await uow.user_repo.get_by_id(user_id=payload.sub)
 
             if not user:
+                logger.warning("Token refresh rejected: user not found")
                 raise UserNotFoundError()
 
             lock_token = await self.redis_repo.acquire_lock(
@@ -120,7 +139,10 @@ class AuthService:
             )
 
             if not lock_token:
+                logger.warning("Token refresh failed: unable to acquire session lock")
                 raise LockAcquisitionError()
+
+            logger.debug("Session lock acquired for token refresh")
 
             try:
                 token = await self.token_repo.get_token(
@@ -128,8 +150,13 @@ class AuthService:
                 )
 
                 if not token:
+                    logger.warning(
+                        "Token refresh rejected: stored session token missing"
+                    )
                     raise InvalidCredentialsError()
+
                 if not hmac.compare_digest(token, hash_token(refresh_token)):
+                    logger.warning("Token refresh rejected: token mismatch")
                     raise InvalidCredentialsError()
 
                 new_access_token = create_access_token(user_id=user.id)
@@ -144,10 +171,14 @@ class AuthService:
                     ttl=settings.refresh_exp * 24 * 60 * 60,
                 )
 
+                logger.info("Refresh tokens rotated successfully")
+
             finally:
                 await self.redis_repo.release_lock(
                     token=lock_token, session_id=payload.session_id
                 )
+
+                logger.debug("Session lock released after token refresh")
 
         self._set_refresh_cookie(response, new_refresh_token)
 
@@ -155,11 +186,14 @@ class AuthService:
 
     async def logout(self, token: str | None, response: Response):
         if token is None:
+            logger.warning("Logout rejected: refresh token is missing")
             raise InvalidCredentialsError()
+
         async with self.uow as uow:
             payload = decode_refresh_token(token=token)
 
             if not await uow.user_repo.get_by_id(user_id=payload.sub):
+                logger.warning("Logout rejected: user not found")
                 raise InvalidCredentialsError()
 
             stored_token = await self.token_repo.get_token(
@@ -167,9 +201,11 @@ class AuthService:
             )
 
             if not stored_token:
+                logger.warning("Logout rejected: stored session token missing")
                 raise InvalidCredentialsError()
 
             if not hmac.compare_digest(stored_token, hash_token(token)):
+                logger.warning("Logout rejected: token mismatch")
                 raise InvalidCredentialsError()
 
             await self.token_repo.delete_token(
@@ -177,3 +213,5 @@ class AuthService:
             )
 
             response.delete_cookie(key="refresh_token", path="/auth")
+
+            logger.info("User logout successful")

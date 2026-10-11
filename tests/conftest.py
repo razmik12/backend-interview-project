@@ -23,7 +23,7 @@ async def test_redis():
     try:
         yield redis
     finally:
-        app.dependency_overrides.pop(get_redis,None)
+        app.dependency_overrides.pop(get_redis, None)
         await redis.flushdb()
         await redis.aclose()
 

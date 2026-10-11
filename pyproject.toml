@@ -8,9 +8,7 @@ requires-python = ">=3.11,<3.12"
 dependencies = [
     "alembic",
     "asyncpg",
-    "bcrypt",
     "fastapi",
-    "passlib",
     "pwdlib[argon2]",
     "pydantic-settings",
     "pydantic[email]>=2.13.5",

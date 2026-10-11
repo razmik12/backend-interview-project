@@ -21,10 +21,9 @@ class Settings(BaseSettings):
 
     redis_host: str = Field(alias="REDIS_HOST")
     redis_port: int = Field(alias="REDIS_PORT")
-    
+
     cookie_secure: bool = Field(default=False, alias="COOKIE_SECURE")
     cors_origins: list[str] = Field(default_factory=list, alias="CORS_ORIGINS")
-
 
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
 

@@ -7,6 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from redis.asyncio import Redis
 
 from app.config import settings
+from app.core.logging_settings import setup_logging
 from app.database import engine
 from app.exceptions.app_exception import AppError
 from app.exceptions.handlers import app_exception_handler
@@ -15,17 +16,15 @@ from app.routers.auth import router as auth_router
 from app.routers.comment import router as comment_router
 from app.routers.project import router as project_router
 from app.routers.task import router as task_router
-from app.core.logging_settings import setup_logging
 
 setup_logging()
 
 logger = logging.getLogger(__name__)
 
 
-
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncIterator[None]:
-    
+
     logger.info("Starting up...")
     redis_client = Redis.from_url(settings.redis_url, decode_responses=True)
     app.state.redis = redis_client

@@ -1,6 +1,6 @@
 import logging
-
 from time import perf_counter
+
 from fastapi import Request, Response
 from starlette.middleware.base import (
     BaseHTTPMiddleware,
@@ -11,14 +11,14 @@ logger = logging.getLogger("app.access")
 
 
 class LoggingMiddleware(BaseHTTPMiddleware):
-    async def dispatch(self, request: Request, call_next:RequestResponseEndpoint) -> Response :
+    async def dispatch(
+        self, request: Request, call_next: RequestResponseEndpoint
+    ) -> Response:
         start_time = perf_counter()
         try:
             response = await call_next(request)
         except Exception:
-            
             process_time_ms = (perf_counter() - start_time) * 1000
-            
 
             logger.exception(
                 "Request failed | Method: %s | Path: %s | "
@@ -27,8 +27,8 @@ class LoggingMiddleware(BaseHTTPMiddleware):
                 request.url.path,
                 process_time_ms,
             )
-            raise 
-    
+            raise
+
         process_time_ms = (perf_counter() - start_time) * 1000
 
         logger.info(

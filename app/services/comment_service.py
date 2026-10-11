@@ -1,3 +1,4 @@
+import logging
 from uuid import UUID
 
 from app.core.uow import UnitOfWork
@@ -9,6 +10,8 @@ from app.models.comment import CommentORM
 from app.schemas.comment import CommentCreate
 from app.services.permissions import require_member, require_owner
 
+logger = logging.getLogger(__name__)
+
 
 class CommentService:
     def __init__(self, uow: UnitOfWork):
@@ -17,32 +20,54 @@ class CommentService:
     async def create(
         self, task_id: UUID, actor_id: UUID, data: CommentCreate
     ) -> CommentORM:
+        logger.info("Comment creation started")
+
         async with self.uow as uow:
             task = await uow.task_repo.get_by_id(task_id=task_id)
             if not task:
+                logger.warning("Comment creation failed: task not found")
                 raise TaskNotFoundError()
+
             await require_member(uow=uow, user_id=actor_id, project_id=task.project_id)
 
-            return await uow.comment_repo.create(
+            comment = await uow.comment_repo.create(
                 task_id=task.id, author_id=actor_id, text=data.text
             )
 
+            logger.info("Comment created successfully")
+
+            return comment
+
     async def list_comments(self, actor_id: UUID, task_id: UUID) -> list[CommentORM]:
+        logger.debug("Retrieving comments for task")
+
         async with self.uow as uow:
             task = await uow.task_repo.get_by_id(task_id=task_id)
             if not task:
+                logger.warning("Comment retrieval failed: task not found")
                 raise TaskNotFoundError()
+
             await require_member(uow=uow, user_id=actor_id, project_id=task.project_id)
 
-            return await uow.comment_repo.list_by_task(task_id=task.id)
+            comments = await uow.comment_repo.list_by_task(task_id=task.id)
+
+            logger.debug("Comments retrieved successfully")
+
+            return comments
 
     async def delete_comment(self, actor_id: UUID, comment_id: UUID) -> None:
+        logger.info("Comment deletion started")
+
         async with self.uow as uow:
             comment = await uow.comment_repo.get_by_id(comment_id=comment_id)
+
             if not comment:
+                logger.warning("Comment deletion failed: comment not found")
                 raise CommentNotFoundError()
             task = await uow.task_repo.get_by_id(task_id=comment.task_id)
+
             if not task:
+                logger.warning("Comment deletion failed: task not found")
                 raise TaskNotFoundError()
 
             if actor_id != comment.author_id:
@@ -53,3 +78,5 @@ class CommentService:
                 )
 
             await uow.comment_repo.delete(comment=comment)
+
+            logger.info("Comment deleted successfully")

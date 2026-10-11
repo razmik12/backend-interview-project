@@ -8,9 +8,10 @@ services:
     volumes:
       - .:/backend
       - /backend/.venv
-      - ./logs:/backend/logs
+      - ./logs:/backend/logs 
     env_file:
       - .env
+    user: root
     depends_on:
       postgres:
         condition: service_healthy
