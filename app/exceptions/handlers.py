@@ -3,8 +3,6 @@ import logging
 from fastapi import Request
 from fastapi.responses import JSONResponse
 
-from .app_exception import AppError
-
 logger = logging.getLogger(__name__)
 
 
