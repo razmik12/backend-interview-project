@@ -20,11 +20,12 @@ async def test_redis():
         yield redis
 
     app.dependency_overrides[get_redis] = get_test_redis
-
-    yield redis
-
-    await redis.flushdb()
-    await redis.aclose()
+    try:
+        yield redis
+    finally:
+        app.dependency_overrides.pop(get_redis,None)
+        await redis.flushdb()
+        await redis.aclose()
 
 
 @pytest_asyncio.fixture()
@@ -56,7 +57,7 @@ async def test_get_db(test_engine):
     try:
         yield session
     finally:
-        app.dependency_overrides.clear()
+        app.dependency_overrides.pop(get_db, None)
         await session.close()
         await transaction.rollback()
         await connection.close()
@@ -80,9 +81,9 @@ async def client(test_get_db, test_redis):
 @pytest_asyncio.fixture
 async def user_data() -> UserTestData:
     return UserTestData(
-        email="razmapian73@gmail.com",
-        password="klara2004",
-        full_name="Razmik",
+        email="user@example.com",
+        password="TestPassword_123!",
+        full_name="Test User",
     )
 
 
@@ -95,6 +96,7 @@ async def user(
         url="/auth/register",
         json=user_data.model_dump(),
     )
+    assert response.status_code == 201
     return response.json()
 
 
@@ -111,6 +113,7 @@ async def login_user(
             "password": user_data.password,
         },
     )
+    assert response.status_code == 200
     return response.json()
 
 
@@ -131,7 +134,7 @@ async def auth_client(
 @pytest_asyncio.fixture
 async def user_data_two():
     return UserTestData(
-        email="new_razmapian73@gmail.com", full_name="Ramzec12", password="levseeva01"
+        email="user2@example.com", full_name="Test User 2", password="TestPassword_456!"
     )
 
 
@@ -154,6 +157,7 @@ async def login_user_two(
             "password": user_data_two.password,
         },
     )
+    assert response.status_code == 200
     return response.json()
 
 
@@ -170,7 +174,7 @@ async def created_project(
     response = await client.post(
         "/projects", headers={"Authorization": f"Bearer {token}"}, json=projects_data
     )
-
+    assert response.status_code == 201
     return response.json()
 
 
@@ -183,6 +187,7 @@ async def created_task(client: AsyncClient, login_user_two, created_project):
         headers={"Authorization": f"Bearer {token}"},
         json={"title": "Test Task", "description": "task description"},
     )
+    assert response.status_code == 201
     return response.json()
 
 
@@ -197,4 +202,5 @@ async def created_comment(
         headers={"Authorization": f"Bearer {token}"},
         json={"text": "Test comment"},
     )
+    assert response.status_code == 201
     return response.json()

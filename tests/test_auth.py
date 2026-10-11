@@ -151,3 +151,47 @@ async def test_logout(
     response = await client.post("/auth/refresh")
 
     assert response.status_code == 401
+    
+    
+@pytest.mark.asyncio
+async def test_logout_invalid_token(
+    client: AsyncClient,
+    login_user,
+):
+    assert client.cookies.get("refresh_token") is not None
+
+    refresh_token = client.cookies.get("refresh_token")
+
+    response = await client.post("/auth/logout")
+    assert response.status_code == 204
+
+    client.cookies.set("refresh_token", refresh_token)
+
+    response = await client.post("/auth/refresh")
+    assert response.status_code == 401
+    
+    
+    
+    
+@pytest.mark.asyncio
+async def test_rate_limiting(
+    client:AsyncClient,
+    user,
+    user_data
+):
+    payload = {
+         "email": user_data.email,
+         "password": "WrongPassword_123!",
+    }
+    
+    for _ in range(5):
+        response = await client.post("/auth/login",
+                                     json=payload)
+        assert response.status_code == 401
+    
+    response = await client.post("/auth/login",
+                                 json=payload)
+    assert response.status_code == 429
+    
+    
+
