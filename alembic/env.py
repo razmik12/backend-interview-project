@@ -1,3 +1,4 @@
+import app.models
 import asyncio
 from logging.config import fileConfig
 
