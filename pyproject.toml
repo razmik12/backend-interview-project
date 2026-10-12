@@ -12,7 +12,7 @@ dependencies = [
     "pwdlib[argon2]",
     "pydantic-settings",
     "pydantic[email]>=2.13.5",
-    "python-jose",
+    "pyjwt>=2.15.1",
     "python-multipart",
     "redis",
     "sqlalchemy[asyncio]",

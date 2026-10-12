@@ -9,7 +9,6 @@ def setup_logging() -> None:
         datefmt="%Y-%m-%d %H:%M:%S",
         handlers=[
             logging.StreamHandler(sys.stdout),
-            logging.FileHandler("logs/log", encoding="utf-8"),
         ],
         force=True,
     )

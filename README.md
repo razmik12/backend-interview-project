@@ -12,7 +12,9 @@
 - [API](#api)
 - [Тестирование](#тестирование)
 - [Проверки качества кода](#проверки-качества-кода)
+- [CI/CD и образ в GitHub Container Registry](#cicd-и-образ-в-github-container-registry)
 - [Переменные окружения](#переменные-окружения)
+- [Статус проекта](#статус-проекта)
 
 ## Возможности
 
@@ -23,6 +25,8 @@
 - Refresh-токен в `HttpOnly` cookie.
 - Обновление токенов с ротацией refresh-токена.
 - Хранение состояния refresh-сессий в Redis.
+- Блокировка в Redis при одновременном обновлении одной сессии.
+- Ограничение частоты попыток входа (rate limiting).
 - Хеширование паролей с помощью `pwdlib` и Argon2.
 - Проверка прав доступа к проектам, задачам и комментариям.
 
@@ -33,7 +37,7 @@
 - Роли владельца и участника проекта.
 - Создание, просмотр, изменение и удаление задач.
 - Изменение статуса задачи и назначение исполнителя.
-- Фильтрация списка задач.
+- Фильтрация и пагинация списка задач.
 - Создание, просмотр и удаление комментариев к задачам.
 - Валидация входных данных с помощью Pydantic.
 
@@ -43,11 +47,11 @@
 - Разделение HTTP-слоя, бизнес-логики и доступа к данным.
 - Repository pattern и Unit of Work.
 - Миграции схемы БД через Alembic.
-- Обработка ошибок приложения.
-- Логирование запросов.
-- Тесты API с `pytest` и `httpx`.
-- Линтинг и форматирование через Ruff.
-- Контейнеризация и CI на GitHub Actions.
+- Единая обработка ошибок приложения.
+- Логирование запросов и действий в stdout (без паролей, токенов и e-mail).
+- Тесты API с `pytest` и `httpx` на реальных PostgreSQL и Redis.
+- Линтинг, форматирование и проверка типов: Ruff и mypy.
+- Контейнеризация, CI на GitHub Actions и публикация образа в GitHub Container Registry.
 
 ## Технологии
 
@@ -59,11 +63,11 @@
 | База данных | PostgreSQL 15, SQLAlchemy 2.x, asyncpg |
 | Миграции | Alembic |
 | Кэш и состояние refresh-сессий | Redis 7 |
-| Аутентификация | JWT, `python-jose`, `pwdlib[argon2]` |
+| Аутентификация | JWT, PyJWT, `pwdlib[argon2]` |
 | Управление зависимостями | uv, `uv.lock` |
 | Тестирование | pytest, pytest-asyncio, HTTPX |
 | Качество кода | Ruff, mypy |
-| Инфраструктура | Docker, Docker Compose, GitHub Actions |
+| Инфраструктура | Docker, Docker Compose, GitHub Actions, GitHub Container Registry |
 
 ## Архитектура
 
@@ -76,9 +80,10 @@ app/
 ├── core/
 │   ├── security.py         # работа с JWT и паролями
 │   ├── redis_app.py        # зависимость Redis
-│   └── uow.py              # Unit of Work
+│   ├── uow.py              # Unit of Work
+│   └── logging_settings.py # настройка логирования
 ├── middleware/
-│   └── logging.py          # middleware логирования
+│   └── logging.py          # middleware логирования запросов
 ├── exceptions/             # ошибки и обработчики исключений
 ├── models/                 # ORM-модели SQLAlchemy
 ├── routers/                # HTTP endpoints
@@ -95,7 +100,12 @@ tests/                      # тесты API
 docker/
 └── Dockerfile
 
+.github/
+└── workflows/
+    └── ci.yml              # CI и публикация образа
+
 docker-compose.yml
+.env.example
 pyproject.toml
 uv.lock
 ```
@@ -182,6 +192,8 @@ docker compose down
 ```bash
 docker compose exec app uv run alembic upgrade head
 ```
+
+Создать новую миграцию по изменениям моделей:
 
 ```bash
 docker compose exec app uv run alembic revision --autogenerate -m "describe_change"
@@ -285,7 +297,37 @@ docker compose exec app uv run mypy app
 docker compose exec app uv run python -m compileall -q app tests alembic
 ```
 
-В CI на GitHub Actions выполняются проверки Ruff, форматирования, запуск Docker Compose, миграции Alembic и тесты.
+## CI/CD и образ в GitHub Container Registry
+
+Workflow `.github/workflows/ci.yml` запускается при push и pull request в ветку `master`.
+
+**Job `test`** (при каждом push и pull request):
+
+1. Поднимает Docker Compose с PostgreSQL, тестовой БД и Redis.
+2. Проверяет код: Ruff (lint и формат) и mypy.
+3. Применяет миграции Alembic.
+4. Запускает тесты `pytest`.
+5. Проверяет, что production-образ собирается и запускается.
+
+**Job `build-and-push`** (только при push в `master` после успешного `test`): собирает образ из `docker/Dockerfile` и публикует его в GitHub Container Registry. Образ получает теги `latest` и `<sha коммита>`, поэтому каждую версию можно связать с коммитом.
+
+### Запуск образа из GHCR
+
+Образ: `ghcr.io/razmik12/backend-interview-project`.
+
+Образ содержит только приложение. PostgreSQL и Redis нужно запустить отдельно, а их адреса указать в `.env` (см. [Переменные окружения](#переменные-окружения)). Миграции при старте контейнера не применяются, их запускают вручную:
+
+```bash
+docker run --rm --env-file .env ghcr.io/razmik12/backend-interview-project:latest alembic upgrade head
+```
+
+Запуск приложения:
+
+```bash
+docker run --rm --env-file .env -p 8000:8000 ghcr.io/razmik12/backend-interview-project:latest
+```
+
+Если пакет приватный, сначала выполни `docker login ghcr.io` с токеном, у которого есть право `read:packages`.
 
 ## Переменные окружения
 
@@ -307,7 +349,7 @@ docker compose exec app uv run python -m compileall -q app tests alembic
 | `refresh_token_expire_days` | Срок жизни refresh-сессии в днях |
 | `REDIS_HOST` | Хост Redis; в Compose — `redis` |
 | `REDIS_PORT` | Порт Redis внутри сети Compose, обычно `6379` |
-| `CORS_ORIGINS` | JSON-массив разрешённых origins, например `[`"`http://localhost:3000`"`]` |
+| `CORS_ORIGINS` | JSON-массив разрешённых origins, например `["http://localhost:3000"]` |
 | `COOKIE_SECURE` | `true` для HTTPS в production; локально по HTTP может быть `false` |
 
 Значения `postgres`, `postgres_test` и `redis` используются для связи контейнеров внутри сети Docker Compose. Если приложение запускается напрямую на компьютере, эти имена обычно недоступны как сетевые хосты — тогда нужно настроить соответствующие адреса и порты для локального запуска.

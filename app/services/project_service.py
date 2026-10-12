@@ -54,6 +54,9 @@ class ProjectService:
             )
 
             project = await uow.project_repo.get_with_members(project_id=project_id)
+            if not project:
+                logger.warning("Project update failed: project not found")
+                raise ProjectNotFoundError()
 
             logger.debug("Project details retrieved successfully")
             return project

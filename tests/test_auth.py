@@ -1,7 +1,7 @@
 import pytest
 from httpx import AsyncClient
 
-from app.schemas.user import UserTestData
+from tests.schema import UserTestData
 
 
 @pytest.mark.asyncio
@@ -69,8 +69,8 @@ async def test_login_user(
 @pytest.mark.parametrize(
     "email,password,expected_status",
     [
-        ("razmapian73@gmail.com", "2004klara", 401),
-        ("email@gmail.com", "klara2004", 401),
+        ("user_tests@example.com", "WrongPassword_123!", 401),
+        ("email@gmail.com", "WrongPassword_two_123!", 401),
     ],
 )
 @pytest.mark.asyncio

@@ -1,3 +1,5 @@
+from typing import Self
+
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.repositories.comment_repo import CommentRepository
@@ -11,7 +13,7 @@ class UnitOfWork:
     def __init__(self, session: AsyncSession):
         self.session = session
 
-    async def __aenter__(self):
+    async def __aenter__(self) -> Self:
         self.user_repo = UserRepository(session=self.session)
         self.project_repo = ProjectRepository(session=self.session)
         self.member_repo = ProjectMemberRepository(session=self.session)

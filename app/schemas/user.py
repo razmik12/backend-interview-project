@@ -42,9 +42,3 @@ class RefreshPayload(BaseModel):
     sub: uuid.UUID
     session_id: uuid.UUID
     type: str = "refresh_token"
-
-
-class UserTestData(BaseModel):
-    email: EmailStr
-    full_name: str
-    password: str

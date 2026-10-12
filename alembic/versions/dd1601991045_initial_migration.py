@@ -122,3 +122,7 @@ def downgrade() -> None:
     op.drop_index(op.f("ix_users_email"), table_name="users")
     op.drop_table("users")
     # ### end Alembic commands ###
+
+    # Удаляем ENUM-типы PostgreSQL
+    sa.Enum(name="projectmemberrole").drop(op.get_bind(), checkfirst=True)
+    sa.Enum(name="statusenum").drop(op.get_bind(), checkfirst=True)

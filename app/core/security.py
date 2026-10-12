@@ -2,7 +2,8 @@ import hashlib
 import uuid
 from datetime import UTC, datetime, timedelta
 
-from jose import JWTError, jwt
+import jwt
+from jwt import PyJWTError
 from pwdlib import PasswordHash
 
 from app.config import settings
@@ -60,7 +61,7 @@ def decode_access_token(token: str) -> uuid.UUID:
         if not user_id:
             raise InvalidCredentialsError()
         return uuid.UUID(user_id)
-    except (JWTError, ValueError):
+    except (PyJWTError, ValueError):
         raise InvalidCredentialsError()
 
 
@@ -86,7 +87,7 @@ def decode_refresh_token(token: str) -> RefreshPayload:
             session_id=uuid.UUID(payload["session_id"]),
         )
 
-    except (JWTError, ValueError):
+    except (PyJWTError, ValueError):
         raise InvalidCredentialsError()
 
 
