@@ -3,13 +3,13 @@ from typing import Any
 import pytest_asyncio
 from httpx import ASGITransport, AsyncClient
 from redis.asyncio import Redis
-from schema import UserTestData
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 
 from app.config import settings
 from app.core.redis_app import get_redis
 from app.database import Base, get_db
 from app.main import app
+from tests.schema import UserTestData
 
 
 @pytest_asyncio.fixture
